@@ -1,0 +1,29 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: plex
+  namespace: default
+spec:
+  repo: https://k8s-at-home.com/charts/
+  chart: plex
+  version: 6.0.2
+  valuesContent: |
+    hostNetwork: true
+    nodeSelector:
+      kubernetes.io/hostname: k3sa
+    env:
+      TZ: Europe/Amsterdam
+    service:
+      main:
+        primary: true
+        type: NodePort
+        ports:
+          http:
+            port: 32400
+    persistence:
+      config:
+        enabled: true
+        type: pvc
+        accessMode: ReadWriteOnce
+        size: 200Gi
+        retain: true

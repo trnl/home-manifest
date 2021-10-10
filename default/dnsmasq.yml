@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dnsmasq
+data:
+  dnsmasq.conf: |
+    # To disable dnsmasq's DNS server functionality.
+    port=0
+
+    # To enable dnsmasq's DHCP server functionality.
+    dhcp-authoritative
+    dhcp-range=192.168.1.5,192.168.1.251,24h
+    dhcp-option=option:router,192.168.1.1
+    dhcp-option=option:dns-server,192.168.1.3
+
+    domain=home
+    local=/home/
+    dhcp-rapid-commit
+    dhcp-host=F0:86:20:5B:9F:9E,192.168.1.13,tv
+    dhcp-host=80:7D:14:53:53:54,192.168.1.1,T-mobile
+    dhcp-host=04:CF:8C:8F:80:CC,192.168.1.5,mihub
+    dhcp-host=AC:29:3A:DA:9E:0B,192.168.1.8,EPNLAMSW0120
+    dhcp-host=D8:F1:5B:C8:AF:DC,192.168.1.89,lv-wallswitch
+    dhcp-host=7C:49:EB:AC:C3:C0,192.168.1.15,yeelink-light-color2_miapc3c0
+    dhcp-host=5C:E5:0C:87:6C:57,192.168.1.115,yeelink-light-color2_miap6c57
+    dhcp-host=5C:E5:0C:86:65:72,192.168.1.116,yeelink-light-color2_miap6572
+    dhcp-host=5C:E5:0C:38:42:99,192.168.1.32,yeelink-light-bslamp2_mibt4299
+    dhcp-host=64:90:C1:0B:97:6B,192.168.1.62,mimi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dnsmasq
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: dnsmasq
+  template:
+    metadata:
+      labels:
+        app: dnsmasq
+    spec:
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: k3sb
+      containers:
+      - name: dnsmasq
+        image: anzevalher/dnsmasq
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        securityContext:
+          capabilities:
+            add:
+             - NET_ADMIN
+        ports:
+        - containerPort: 67
+        volumeMounts:
+          - mountPath: /etc/dnsmasq.conf
+            name: config
+            subPath: dnsmasq.conf
+      volumes:
+        - name: config
+          configMap:
+            name: dnsmasq

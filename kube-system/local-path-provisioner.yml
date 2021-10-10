@@ -1,0 +1,76 @@
+apiVersion: v1
+data:
+  config.json: |-
+    {
+      "nodePathMap":[
+      {
+        "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
+        "paths":["/var/lib/rancher/k3s/storage"]
+      },
+      {
+        "node":"k3sa",
+        "paths":["/mnt/blue"]
+      },
+      {
+        "node":"k3sb",
+        "paths":["/mnt/samsung"]
+      }
+      ]
+    }
+  helperPod.yaml: |-
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: helper-pod
+    spec:
+      containers:
+      - name: helper-pod
+        image: rancher/library-busybox:1.32.1
+  setup: |-
+    #!/bin/sh
+    while getopts "m:s:p:" opt
+    do
+        case $opt in
+            p)
+            absolutePath=$OPTARG
+            ;;
+            s)
+            sizeInBytes=$OPTARG
+            ;;
+            m)
+            volMode=$OPTARG
+            ;;
+        esac
+    done
+    mkdir -m 0777 -p ${absolutePath}
+    chmod 701 ${absolutePath}/..
+  teardown: |-
+    #!/bin/sh
+    while getopts "m:s:p:" opt
+    do
+        case $opt in
+            p)
+            absolutePath=$OPTARG
+            ;;
+            s)
+            sizeInBytes=$OPTARG
+            ;;
+            m)
+            volMode=$OPTARG
+            ;;
+        esac
+    done
+    rm -rf ${absolutePath}
+kind: ConfigMap
+metadata:
+  annotations:
+    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/+SUT08bPRDGv4rfeblU2j8JC0lkxCEt0KICiSDtpUbRrO1kTXZty3ZC0yjfvXLSiBQB7b17WNl+9jf7zNjjFaBVX6XzymigsGhDAgIDAl0BN3qiptmD30grpglhoI2QQwzVNVoG9Ftc3Cg7jQFlcHZ+0f9yNRoP+6NP44vB7fhmcDO+urwbnZ+NbwZn53cMkh1kMVR+EwryBbq8VmXuUPNKunxW+NwH43AqGdxHYh1f90yvIYFK1la6oRHZEpsa6F4qlCzaTM+UFpQMjWC6kQFjXjTyGhtJyRZPbZS9lXwjcaMDKi2d30zTF76NtlWDU0nJzmetSodumZZzvyzNd9rOisMsltLLMLdA4f//8lLp3FdMP1aqlmQqg7HBEwYN9dRSBsTYwLQw2x9w9JIcGBuI0tuV+Nh3T2MsvannYbMZpweD4ah/+/FJPTl5Gvs9yqsf8lK/Xwbp34aaPWhh6msj5OuA9Mijdy2ZbmZCOZI2pNXtdklqycFq3+qaaV41RpBuq/1cyrMMEggSnTCP+t8qm2tI6ibPKwLrBOIpBgofNt14jRYS2J3m2KWotQkYlNE+Tk35IHnwMmROmYxjCLXMlMlVjAHJq7p51NKl08UMKMwKv6cs2gn5rLQ47Qth9B9DxIYBCrXhWKe/mvevIG+RR3I2L2Xqlz7IJqZfYynrN1Or0FdAod0rJsUx7xxPJiUvWp2jTquYHBWT9nGvJXq808NDgaU4ikF/MxlvoHR72cFWetHK+mcAAAD//4IGohgsBQAA
+    objectset.rio.cattle.io/id: ""
+    objectset.rio.cattle.io/owner-gvk: k3s.cattle.io/v1, Kind=Addon
+    objectset.rio.cattle.io/owner-name: local-storage
+    objectset.rio.cattle.io/owner-namespace: kube-system
+  creationTimestamp: "2021-10-04T21:00:47Z"
+  labels:
+    objectset.rio.cattle.io/hash: 183f35c65ffbc3064603f43f1580d8c68a2dabd4
+  name: local-path-config
+  namespace: kube-system

@@ -1,0 +1,39 @@
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: grafana
+  namespace: default
+spec:
+  repo: https://grafana.github.io/helm-charts
+  chart: grafana
+  version: 6.16.11
+  valuesContent: |
+    service:
+      type: NodePort
+      nodePort: 30000
+    nodeSelector:
+      kubernetes.io/hostname: k3sb
+    testFramework:
+      enabled: false
+    adminPassword: admin
+    grafana.ini:
+      auth.anonymous:
+        enabled: true
+        org_name: Main Org.
+        org_role: Viewer
+      panels:
+        disable_sanitize_html: true
+    datasources:
+      datasources.yaml:
+        apiVersion: 1
+        datasources:
+          - name: Prometheus
+            type: prometheus
+            access: direct
+            url: http://k3sa.home:9090
+            isDefault: true
+    sidecar:
+      dashboards:
+        enabled: true
+        resource: configmap
