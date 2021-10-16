@@ -1,0 +1,19 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: transmission
+  namespace: default
+spec:
+  repo: https://k8s-at-home.com/charts/
+  chart: transmission
+  version: 8.0.1
+  valuesContent: |
+    hostNetwork: true
+    nodeSelector:
+      kubernetes.io/hostname: k3sa
+    env:
+      TZ: Europe/Amsterdam
+    persistence:
+      config:
+        enabled: true
+        existingClaim: plex-config
