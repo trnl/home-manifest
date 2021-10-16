@@ -1,76 +1,20 @@
-apiVersion: v1
-data:
-  config.json: |-
-    {
-      "nodePathMap":[
-      {
-        "node":"DEFAULT_PATH_FOR_NON_LISTED_NODES",
-        "paths":["/var/lib/rancher/k3s/storage"]
-      },
-      {
-        "node":"k3sa",
-        "paths":["/mnt/blue"]
-      },
-      {
-        "node":"k3sb",
-        "paths":["/mnt/samsung"]
-      }
-      ]
-    }
-  helperPod.yaml: |-
-    apiVersion: v1
-    kind: Pod
-    metadata:
-      name: helper-pod
-    spec:
-      containers:
-      - name: helper-pod
-        image: rancher/library-busybox:1.32.1
-  setup: |-
-    #!/bin/sh
-    while getopts "m:s:p:" opt
-    do
-        case $opt in
-            p)
-            absolutePath=$OPTARG
-            ;;
-            s)
-            sizeInBytes=$OPTARG
-            ;;
-            m)
-            volMode=$OPTARG
-            ;;
-        esac
-    done
-    mkdir -m 0777 -p ${absolutePath}
-    chmod 701 ${absolutePath}/..
-  teardown: |-
-    #!/bin/sh
-    while getopts "m:s:p:" opt
-    do
-        case $opt in
-            p)
-            absolutePath=$OPTARG
-            ;;
-            s)
-            sizeInBytes=$OPTARG
-            ;;
-            m)
-            volMode=$OPTARG
-            ;;
-        esac
-    done
-    rm -rf ${absolutePath}
-kind: ConfigMap
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
 metadata:
-  annotations:
-    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/+SUT08bPRDGv4rfeblU2j8JC0lkxCEt0KICiSDtpUbRrO1kTXZty3ZC0yjfvXLSiBQB7b17WNl+9jf7zNjjFaBVX6XzymigsGhDAgIDAl0BN3qiptmD30grpglhoI2QQwzVNVoG9Ftc3Cg7jQFlcHZ+0f9yNRoP+6NP44vB7fhmcDO+urwbnZ+NbwZn53cMkh1kMVR+EwryBbq8VmXuUPNKunxW+NwH43AqGdxHYh1f90yvIYFK1la6oRHZEpsa6F4qlCzaTM+UFpQMjWC6kQFjXjTyGhtJyRZPbZS9lXwjcaMDKi2d30zTF76NtlWDU0nJzmetSodumZZzvyzNd9rOisMsltLLMLdA4f//8lLp3FdMP1aqlmQqg7HBEwYN9dRSBsTYwLQw2x9w9JIcGBuI0tuV+Nh3T2MsvannYbMZpweD4ah/+/FJPTl5Gvs9yqsf8lK/Xwbp34aaPWhh6msj5OuA9Mijdy2ZbmZCOZI2pNXtdklqycFq3+qaaV41RpBuq/1cyrMMEggSnTCP+t8qm2tI6ibPKwLrBOIpBgofNt14jRYS2J3m2KWotQkYlNE+Tk35IHnwMmROmYxjCLXMlMlVjAHJq7p51NKl08UMKMwKv6cs2gn5rLQ47Qth9B9DxIYBCrXhWKe/mvevIG+RR3I2L2Xqlz7IJqZfYynrN1Or0FdAod0rJsUx7xxPJiUvWp2jTquYHBWT9nGvJXq808NDgaU4ikF/MxlvoHR72cFWetHK+mcAAAD//4IGohgsBQAA
-    objectset.rio.cattle.io/id: ""
-    objectset.rio.cattle.io/owner-gvk: k3s.cattle.io/v1, Kind=Addon
-    objectset.rio.cattle.io/owner-name: local-storage
-    objectset.rio.cattle.io/owner-namespace: kube-system
-  creationTimestamp: "2021-10-04T21:00:47Z"
-  labels:
-    objectset.rio.cattle.io/hash: 183f35c65ffbc3064603f43f1580d8c68a2dabd4
-  name: local-path-config
+  name: local-path-provisioner
   namespace: kube-system
+spec:
+  chartContent: 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
+  valuesContent: |
+    nodeSelector:
+      kubernetes.io/hostname: k3sa
+    nodePathMap:
+      - node: DEFAULT_PATH_FOR_NON_LISTED_NODES
+        paths:
+          - /opt/local-path-provisioner
+      - node: k3sa
+        paths:
+          - /mnt/blue
+      - node: k3sb
+        paths:
+          - /mnt/samsung
